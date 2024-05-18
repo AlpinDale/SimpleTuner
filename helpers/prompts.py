@@ -354,6 +354,34 @@ class PromptHandler:
             logger.error(f"Could not read caption file {caption_file}: {e}")
 
     @staticmethod
+    def prepare_instance_prompt_from_jsonfile(
+        image_path: str,
+        prepend_instance_prompt: bool,
+        instance_prompt: str = None,
+    ) -> str:
+        json_file = os.path.splitext(image_path)[0] + ".json"
+        if not os.path.exists(json_file):
+            raise FileNotFoundError(f"JSON file {json_file} not found.")
+
+        try:
+            with open(json_file, 'r') as f:
+                data = json.load(f)
+
+            attributes = data.get('attributes', [])
+            attribute_prompts = [
+                f"{attr['trait_type']}: {attr['value']}" for attr in attributes
+            ]
+            prompt = " ".join(attribute_prompts)
+
+            if prepend_instance_prompt:
+                prompt = instance_prompt + " " + prompt
+
+            return prompt
+        except Exception as e:
+            logger.error(f"Could not read JSON file {json_file}: {e}")
+            raise
+
+    @staticmethod
     def magic_prompt(
         image_path: str,
         use_captions: bool,
@@ -400,6 +428,12 @@ class PromptHandler:
                 instance_prompt=instance_prompt,
                 data_backend=data_backend,
                 sampler_backend_id=sampler_backend_id,
+            )
+        elif caption_strategy == "jsonfile":
+            instance_prompt = PromptHandler.prepare_instance_prompt_from_jsonfile(
+                image_path,
+                prepend_instance_prompt=prepend_instance_prompt,
+                instance_prompt=instance_prompt,
             )
         elif caption_strategy == "instanceprompt":
             return instance_prompt
@@ -464,6 +498,12 @@ class PromptHandler:
                     )
                 except:
                     continue
+            elif caption_strategy == "jsonfile":
+                caption = PromptHandler.prepare_instance_prompt_from_jsonfile(
+                    image_path,
+                    prepend_instance_prompt=prepend_instance_prompt,
+                    instance_prompt=instance_prompt,
+                )
             elif caption_strategy == "instanceprompt":
                 return [instance_prompt]
             else:
