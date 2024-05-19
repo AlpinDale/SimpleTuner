@@ -224,8 +224,8 @@ if [ -z "$GRADIENT_ACCUMULATION_STEPS" ]; then
 fi
 
 if [ -z "$DEFAULT_CAPTION_STRATEGY" ]; then
-    printf "DEFAULT_CAPTION_STRATEGY not set, defaulting to 'filename'. Choices are: 'filename', 'textfile'\n"
-    export DEFAULT_CAPTION_STRATEGY='filename'
+    printf "DEFAULT_CAPTION_STRATEGY not set, defaulting to 'filename'. Choices are: 'filename', 'textfile', 'jsonfile'\n"
+    export DEFAULT_CAPTION_STRATEGY='jsonfile'
 fi
 
 export TF32_ARG=""
